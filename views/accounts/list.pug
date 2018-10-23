@@ -1,0 +1,73 @@
+
+extends ../base.pug
+
+block link
+  -var selectedMenu = 'accounts';  
+
+block content
+  .row.col.s7 
+    .col.s3
+      h5 자산(Asset)
+      table.striped(style="line-height: 1px; padding-top: 1px")
+        each account in accounts      
+          if account.type == 'asset'
+            tr
+              td(scope="row")= account.description  
+    .col.s3 
+      h5 부채(Debt)
+      table.striped(style="line-height: 1px; padding-top: 1px")
+        each account in accounts      
+          if account.type == 'debt'
+            tr
+              td(scope="row")= account.description
+  .row.col.s7 
+    .col.s3 
+      h5 비용(Cost)
+      table.striped(style="line-height: 1px; padding-top: 1px")
+        each account in accounts      
+          if account.type == 'cost'
+            tr
+              td(scope="row")= account.description
+    .col.s3 
+      h5 수익(Income)
+      table.striped(style="line-height: 1px; padding-top: 1px")
+        each account in accounts      
+          if account.type == 'income'
+            tr
+              td(scope="row")= account.description
+  .row.col.s7 
+    .col.s3 
+      h5 순자산(Net Assets)
+      table.striped(style="line-height: 1px; padding-top: 1px")
+        each account in accounts      
+          if account.type == 'netAssets'
+            tr
+              td(scope="row")= account.description
+
+  form.col.s12(method="POST" action="/accounts/add")
+    .row
+      .input-field.col.s3
+        //label(for="description") 항목명 #[input.form-control(type="text", name="description", id="description")]      
+        label(for="description") 항목명 
+        input.form-control(type="text", name="description", id="description")
+      .input-field.col.s3          
+        select(name="type", id="type")
+          option(value="" selected= true) 종류 선택
+          option(value="asset") 자산
+          option(value="debt") 부채
+          option(value="cost") 비용
+          option(value="income") 수익
+          option(value="netAssets") 순자산
+        
+      .input-field.col.s2
+        button.btn.btn-success(type="submit") ADD
+    
+  if !accounts.length
+    p No accounts found.
+
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems, null);
+      console.log("selector init");
+    });

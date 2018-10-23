@@ -1,0 +1,12 @@
+each transaction in transactions      
+    tr(onmousedown="rowClick(this,false);", trId=transaction.id)
+        td(scope="row")= transaction.usingDate
+        td= transaction.description
+        td= transaction.amount
+        td= transaction.lAccountDescription
+        td= transaction.rAccountDescription
+        td
+            a(href=`#modal1` class='modal-trigger')
+                i(class="tiny material-icons", trId=transaction.id, onClick="editClick(this);") edit
+            a(href=`/transactions/${transaction.id}/delete`)
+                i(class="tiny material-icons", trId=transaction.id) delete

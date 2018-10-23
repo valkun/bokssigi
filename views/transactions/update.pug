@@ -1,0 +1,68 @@
+mixin updateblock(prefix)
+  .row   
+    //-form.col.s12(id='trForm')
+    form.col.s12(id=`${prefix}trForm` method="POST" action="/transactions/add")    
+      .row      
+        .input-field.col.s1
+          label(for="usingDate") 날짜 #[input.form-control(type="text", name="usingDate", id=`${prefix}usingDate`, value=moment(Date.now()).format('YYYYMMDD'))]     
+        .input-field.col.s2
+          label(for="description") 내역 #[input.form-control(type="text", name="description", id=`${prefix}description`)]
+        .input-field.col.s2
+          label(for="amount") 금액 #[input.form-control(type="text", name="amount", id=`${prefix}amount`)]          
+        .input-field.col.s3
+          label(for="lAccount") 좌변 #[input.form-control(type="text", name="lAccount", id=`${prefix}lAccount`)]                                  
+        .input-field.col.s3
+          label(for="rAccount") 우변 #[input.form-control(type="text", name="rAccount", id=`${prefix}rAccount`)]          
+        .input-field.col.s1
+          button.waves-effect.waves-light.btn-small(type="submit") 입력 
+      .row
+        .input-field.col.s3.offset-s5
+          .div.accountHeaer
+            label 자산 
+          each accountItem in accounts   
+            if(accountItem.type=="asset")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}+            
+          .div.accountHeaer
+            label 부채
+          each accountItem in accounts   
+            if(accountItem.type=="debt")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}-
+          .div.accountHeaer
+            label 비용
+          each accountItem in accounts   
+            if(accountItem.type=="cost")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}
+          .div.accountHeaer
+            label 순자산      
+          each accountItem in accounts   
+            if(accountItem.type=="netAssets")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}-
+        .input-field.col.s3
+          .div.accountHeaer
+            label 자산 
+          each accountItem in accounts   
+            if(accountItem.type=="asset")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}-
+          .div.accountHeaer
+            label 부채    
+          each accountItem in accounts   
+            if(accountItem.type=="debt")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}+
+          .div.accountHeaer
+            label 수익      
+          each accountItem in accounts   
+            if(accountItem.type=="income")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}
+          .div.accountHeaer
+            label 순자산      
+          each accountItem in accounts   
+            if(accountItem.type=="netAssets")               
+              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+              | accountId=accountItem.id) #{accountItem.description}+
