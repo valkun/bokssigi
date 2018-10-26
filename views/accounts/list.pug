@@ -4,45 +4,59 @@ extends ../base.pug
 block link
   -var selectedMenu = 'accounts';  
 
+append scripts  
+  script(src='account.js')
+  script(src='https://unpkg.com/axios/dist/axios.min.js')
+
 block content
   .row.col.s7 
-    .col.s3
-      h5 자산(Asset)
-      table.striped(style="line-height: 1px; padding-top: 1px")
-        each account in accounts      
-          if account.type == 'asset'
-            tr
-              td(scope="row")= account.description  
-    .col.s3 
-      h5 부채(Debt)
-      table.striped(style="line-height: 1px; padding-top: 1px")
-        each account in accounts      
-          if account.type == 'debt'
-            tr
-              td(scope="row")= account.description
+    .col.s6.accountBlocks
+      h5 자산(Asset)      
+      each account in accounts      
+        if account.type == 'asset'          
+          .row(style='margin-bottom: 5px',id=account.id, type=account.type, accountSeq=account.seq, desc=account.description)
+            .col.s4= account.description           
+            .col.s2              
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_up 
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_down
+    .col.s6.accountBlocks
+      h5 부채(Debt)      
+      each account in accounts      
+        if account.type == 'debt'
+          .row(style='margin-bottom: 5px',id=account.id, type=account.type, accountSeq=account.seq, desc=account.description)
+            .col.s4= account.description           
+            .col.s2              
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_up 
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_down
   .row.col.s7 
-    .col.s3 
-      h5 비용(Cost)
-      table.striped(style="line-height: 1px; padding-top: 1px")
-        each account in accounts      
-          if account.type == 'cost'
-            tr
-              td(scope="row")= account.description
-    .col.s3 
-      h5 수익(Income)
-      table.striped(style="line-height: 1px; padding-top: 1px")
-        each account in accounts      
-          if account.type == 'income'
-            tr
-              td(scope="row")= account.description
+    .col.s6.accountBlocks
+      h5 비용(Cost)      
+      each account in accounts      
+        if account.type == 'cost'
+          .row(style='margin-bottom: 5px',id=account.id, type=account.type, accountSeq=account.seq, desc=account.description)
+            .col.s4= account.description           
+            .col.s2              
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_up 
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_down
+    .col.s6.accountBlocks 
+      h5 수익(Income)      
+      each account in accounts      
+        if account.type == 'income'
+          .row(style='margin-bottom: 5px',id=account.id, type=account.type, accountSeq=account.seq, desc=account.description)
+            .col.s4= account.description           
+            .col.s2              
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_up 
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_down
   .row.col.s7 
-    .col.s3 
-      h5 순자산(Net Assets)
-      table.striped(style="line-height: 1px; padding-top: 1px")
-        each account in accounts      
-          if account.type == 'netAssets'
-            tr
-              td(scope="row")= account.description
+    .col.s6.accountBlocks 
+      h5 순자산(Net Assets)      
+      each account in accounts      
+        if account.type == 'netAssets'
+          .row(style='margin-bottom: 5px',id=account.id, type=account.type, accountSeq=account.seq, desc=account.description)
+            .col.s4= account.description           
+            .col.s2              
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_up 
+              i.tiny.material-icons(onclick='onarrowbuttonclick(event)') arrow_drop_down
 
   form.col.s12(method="POST" action="/accounts/add")
     .row
@@ -58,6 +72,9 @@ block content
           option(value="cost") 비용
           option(value="income") 수익
           option(value="netAssets") 순자산
+      .input-field.col.s2      
+        label(for="seq") Order
+        input.form-control(type="number", name="seq", id="seq")
         
       .input-field.col.s2
         button.btn.btn-success(type="submit") ADD

@@ -20,49 +20,73 @@ mixin updateblock(prefix)
           .div.accountHeaer
             label 자산 
           each accountItem in accounts   
-            if(accountItem.type=="asset")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}+            
+            if(accountItem.type=="asset") 
+              if (accountItem.description == '---') 
+                .hr
+              else
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}+            
           .div.accountHeaer
             label 부채
           each accountItem in accounts   
-            if(accountItem.type=="debt")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}-
+            if(accountItem.type=="debt")  
+              if (accountItem.description == '---') 
+                .hr             
+              else
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}-
           .div.accountHeaer
             label 비용
           each accountItem in accounts   
-            if(accountItem.type=="cost")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}
+            if(accountItem.type=="cost")     
+              if (accountItem.description == '---') 
+                .hr             
+              else          
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}
           .div.accountHeaer
             label 순자산      
           each accountItem in accounts   
-            if(accountItem.type=="netAssets")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}-
+            if(accountItem.type=="netAssets")     
+              if (accountItem.description == '---') 
+                .hr             
+              else          
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountL", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}-
         .input-field.col.s3
           .div.accountHeaer
             label 자산 
           each accountItem in accounts   
             if(accountItem.type=="asset")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}-
+              if (accountItem.description == '---') 
+                .hr             
+              else
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}-
           .div.accountHeaer
             label 부채    
           each accountItem in accounts   
-            if(accountItem.type=="debt")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}+
+            if(accountItem.type=="debt")  
+              if (accountItem.description == '---') 
+                .hr             
+              else             
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}+
           .div.accountHeaer
             label 수익      
           each accountItem in accounts   
             if(accountItem.type=="income")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}
+              if (accountItem.description == '---') 
+                .hr             
+              else
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}
           .div.accountHeaer
             label 순자산      
           each accountItem in accounts   
             if(accountItem.type=="netAssets")               
-              button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
-              | accountId=accountItem.id) #{accountItem.description}+
+              if (accountItem.description == '---') 
+                .hr             
+              else
+                button.waves-effect.waves-teal.btn-flat.accountButton(type="button", name="accountR", onclick=`${prefix}accoutClicked(this)`, 
+                | accountId=accountItem.id) #{accountItem.description}+

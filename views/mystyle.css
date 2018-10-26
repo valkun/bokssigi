@@ -8,3 +8,9 @@
 .accountHeaer {
     background: #D5D8DC;    
 }
+
+.hr {
+    background-color: #e0dcdc;
+    height: 1px;
+    border: 0;
+}

@@ -115,7 +115,8 @@ router.post('/:account/edit', (req, res, next) => {
       next(err);
       return;
     }
-    res.redirect(`${req.baseUrl}/${savedData.id}`);
+    //res.redirect(`${req.baseUrl}/${savedData.id}`);
+    res.send(savedData);
   });
 });
 

@@ -169,3 +169,4 @@ document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById("trForm").addEventListener( "submit", onsubmit, false);    
     var form = document.getElementById("modaltrForm").addEventListener( "submit", onmodalsubmit, false);    
 });
+
