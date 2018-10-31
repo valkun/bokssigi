@@ -42,37 +42,43 @@ router.use((req, res, next) => {
  * Display a page of transactions (up to ten at a time).
  */
 router.get('/', (req, res, next) => {    
-  getAccountModel().list(null, (err, accounts) => {  
-    if (err) {
-      next(err);
-      return;
-    }      
-    getModel().list(5, req.query.pageToken, (err, entities, cursor) => {
+  var sess = req.session;
+  if(sess.username){
+    getAccountModel().list(null, (err, accounts) => {  
       if (err) {
         next(err);
         return;
-      }  
+      }      
+      getModel().list(5, req.query.pageToken, (err, entities, cursor) => {
+        if (err) {
+          next(err);
+          return;
+        }  
 
-      if (req.query.resType == "html") {
-        var pug = require('pug');             
-        var fn = pug.compileFile('/home/valkun/git/bokssigi/views/transactions/partialTable.pug', null);      
-        var html = fn({
-          transactions: entities,            
-          accounts: accounts,
-          nextPageToken: cursor,
-          moment: moment
-        });          
-        res.status(200).send({html: html, nextPageToken: cursor });
-      }   
-      else {
-        res.render('transactions/insert.pug', {
-          transactions: entities,            
-          accounts: accounts,
-          nextPageToken: cursor
-        });
-      }         
+        if (req.query.resType == "html") {
+          var pug = require('pug');             
+          var fn = pug.compileFile('/home/valkun/git/bokssigi/views/transactions/partialTable.pug', null);      
+          var html = fn({
+            transactions: entities,            
+            accounts: accounts,
+            nextPageToken: cursor,
+            moment: moment
+          });          
+          res.status(200).send({html: html, nextPageToken: cursor });
+        }   
+        else {
+          res.render('transactions/insert.pug', {
+            transactions: entities,            
+            accounts: accounts,
+            nextPageToken: cursor
+          });
+        }         
+      });
     });
-  });
+  }
+  else{
+    res.render('login/login.pug');
+  }
 });
 
 /**

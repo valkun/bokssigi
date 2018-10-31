@@ -32,7 +32,7 @@ block content
         tr(onmousedown="rowClick(this,false);", trId=transaction.id, insertDate=transaction.insertDate)
           td(scope="row")= transaction.usingDate
           td= transaction.description
-          td= transaction.amount
+          td.amount= transaction.amount
           td(accountId=`${transaction.lAccount}`)= transaction.lAccountDescription
           td(accountId=`${transaction.rAccount}`)= transaction.rAccountDescription
           td
@@ -43,14 +43,10 @@ block content
             a(href=`/transactions/${transaction.id}/delete`)
               i(class="tiny material-icons", trId=transaction.id) delete
   
-  .modal(id="modal1")
-    .modal-content
-      h4 modal
-      h4(id="transactionIdOfModal") temp     
-      
-      +updateblock('modal')
-
-      h4 end      
+  .modal(id="modal1", style='width: 910px')
+    .modal-content(style='padding: 5px; width: 900px')     
+      h4(id="transactionIdOfModal") temp           
+      +updateblock('modal')     
     .modal-footer
       a(href="#!" class="modal-close waves-effect waves-green btn-flat") cancel  
 

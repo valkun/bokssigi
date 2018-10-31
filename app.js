@@ -15,6 +15,7 @@
 
 const path = require('path');
 const express = require('express');
+const session = require('express-session');
 const config = require('./config');
 
 const app = express();
@@ -24,6 +25,12 @@ app.disable('etag');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.set('trust proxy', true);
+
+app.use(session({
+	secret: '1afd2sdfwerwersdfserwerf', 
+	resave: false,
+	saveUninitialized: true
+}));
 
 // books
 app.use('/books', require('./books/crud'));
@@ -37,7 +44,11 @@ app.use('/api/transactions', require('./transactions/api'));
 app.use('/accounts', require('./accounts/crud'));
 app.use('/api/accounts', require('./accounts/api'));
 
+// login/out
+app.use('/logins', require('./login'));
+
 app.use(express.static('public'));
+app.use('/favicon.ico', express.static('favicon.ico'));
 
 // Redirect root to /transactions
 app.get('/', (req, res) => {

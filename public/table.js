@@ -10,7 +10,7 @@ function onmodalsubmit(e){
     data = new FormData();
     let usingDate = $('#modalusingDate').val();
     let description = $('#modaldescription').val();
-    let amount = $('#modalamount').val();
+    let amount = $('#modalamount').val().replace(/,/gi, "");
     let lAccount = $('#modallAccount')[0].getAttribute("accountId")
     let rAccount = $('#modalrAccount')[0].getAttribute("accountId")
     //let now = Date.now();
@@ -33,7 +33,7 @@ function onsubmit(e){
     data = new FormData();
     let usingDate = $('#usingDate').val();
     let description = $('#description').val();
-    let amount = $('#amount').val();
+    let amount = $('#amount').val().replace(/,/gi, "");
     let lAccount = $('#lAccount')[0].getAttribute("accountId")
     let rAccount = $('#rAccount')[0].getAttribute("accountId")
     let now = Date.now();
@@ -54,7 +54,7 @@ function editTransaction(data){
     currentTr.setAttribute('insertDate', data.insertDate)
     tds[0].innerText=data.usingDate;
     tds[1].innerText=data.description;
-    tds[2].innerText=data.amount;
+    tds[2].innerText=numberWithCommas(data.amount);
     tds[3].innerText=data.lAccountDescription;
     tds[3].setAttribute('accountId', data.lAccount)
     tds[4].innerText=data.rAccountDescription;
@@ -170,3 +170,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById("modaltrForm").addEventListener( "submit", onmodalsubmit, false);    
 });
 
+function numberWithCommas(number) {
+    var parts = number.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
+
+$(document).ready(function() {    
+  $("#transactionTable td.amount").each(function() {
+    var num = $(this).text();
+    var commaNum = numberWithCommas(num);
+    $(this).text(commaNum);
+  });
+});

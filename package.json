@@ -63,6 +63,7 @@
     "prompt": "1.0.0",
     "pug": "^2.0.3",
     "moment": "*",
+    "express-session": "*",
     "uglify-js": "3.3.12"
   },
   "devDependencies": {
