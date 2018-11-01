@@ -16,6 +16,7 @@
 const moment = require('moment');
 
 const express = require('express');
+const _ = require('underscore');
 const bodyParser = require('body-parser');
 
 function getModel () {
@@ -25,6 +26,13 @@ function getModel () {
 function getAccountModel () {
   return require(`../accounts/model-${require('../config').get('DATA_BACKEND')}`);
 }
+
+function numberWithCommas(number) {
+  var parts = number.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
+}
+
 const router = express.Router();
 
 // Automatically parse request body as form data
@@ -53,7 +61,11 @@ router.get('/', (req, res, next) => {
         if (err) {
           next(err);
           return;
-        }  
+        }     
+        
+        entities.forEach((entity)=>{
+          entity.amount = numberWithCommas(entity.amount);
+        });
 
         if (req.query.resType == "html") {
           var pug = require('pug');             
@@ -102,10 +114,28 @@ router.get('/add', (req, res) => {
  */
 // [START add_post]
 router.post('/add', (req, res, next) => {
-  const data = req.body;
-
+  let data = req.body;
+  let entities = [];
+  if(data.description.includes('**')){
+    let token = data.description.split('**')
+    let count = parseInt(token[1]);
+    if(count > 1){      
+      for (let i = 0; i < count;i++){   
+        let d = _.clone(data);
+        d.description = token[0] + ` (${i+1}/${count})`;
+        d.insertDate = "" + parseInt(data.insertDate)+i;
+        d.usingDate = moment(data.usingDate, "YYYYMMDD").add(i, 'months').format('YYYYMMDD');
+        entities.push(d)
+      }
+    }else{
+      entities = data;            
+    }    
+  }
+  else {
+    entities = data;  
+  }
   // Save the data to the database.
-  getModel().create(data, (err, savedData) => {
+  getModel().create(entities, (err, savedData) => {
     if (err) {
       next(err);
       return;

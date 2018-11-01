@@ -13,6 +13,8 @@
 
 'use strict';
 
+require('@google-cloud/debug-agent').start();
+
 const path = require('path');
 const express = require('express');
 const session = require('express-session');

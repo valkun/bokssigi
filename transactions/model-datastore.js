@@ -156,8 +156,41 @@ function update (id, data, cb) {
 }
 // [END update]
 
+function createMultiEntity (data, cb) {
+  const entities = [];
+  data.forEach(d => {
+    let key = ds.key(kind);    
+    const entity = {
+      key: key,
+      data: toDatastore(d, ['amount'])
+    };
+    entities.push(entity);
+  });  
+
+  ds.save(
+    entities,
+    (err) => {
+      accountModel.read(data[0].lAccount, (err, lAccount) => {
+        accountModel.read(data[0].rAccount, (err, rAccount) => {
+          for(let i = 0; i < data.length; i++){
+            data[i].id = entities[i].key.id;
+            data[i].lAccountDescription = lAccount.description;
+            data[i].rAccountDescription = rAccount.description;
+          }          
+          cb(err, err ? null : data);
+        });
+      });      
+    }
+  );
+}
+
 function create (data, cb) {
-  update(null, data, cb);
+  if (Array.isArray(data)){
+    createMultiEntity(data, cb);
+  }
+  else {
+    update(null, data, cb);
+  }
 }
 
 function read (id, cb) {

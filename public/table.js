@@ -63,25 +63,28 @@ function editTransaction(data){
 
 function insertTransaction(data) {
     let table = $("#transactionTable")[0].tBodies[0];        
-    let insertedTransaction = 
-    `<tr onmousedown='rowClick(this,false);', trId=${data.id}>
-        <td scope="row">${data.usingDate}</td>    
-        <td>${data.description}</td>
-        <td>${data.amount}</td>
-        <td accountId=${data.lAccount}>${data.lAccountDescription}</td>
-        <td accountId=${data.rAccount}>${data.rAccountDescription}</td>
-        <td>
-            <a href='#modal1' class='modal-trigger'>
-                <i class="tiny material-icons"  trId=${data.id}  onclick="editClick(this);"> edit </i>
-            </a>
-            <a href='/transactions/${data.id}/delete'>
-                <i class="tiny material-icons"  trId=${data.id}> delete </i>
-            </a>
-        </td>
-    </tr>
-    `
-    let innerHTML = table.innerHTML;
-    table.innerHTML = insertedTransaction + innerHTML;
+    let datum = [].concat(data);
+    datum.forEach((data) => {
+        let insertedTransaction = 
+        `<tr onmousedown='rowClick(this,false);', trId=${data.id}>
+            <td scope="row">${data.usingDate}</td>    
+            <td>${data.description}</td>
+            <td class='amount'>${numberWithCommas(data.amount)}</td>
+            <td accountId=${data.lAccount}>${data.lAccountDescription}</td>
+            <td accountId=${data.rAccount}>${data.rAccountDescription}</td>
+            <td>
+                <a href='#modal1' class='modal-trigger'>
+                    <i class="tiny material-icons"  trId=${data.id}  onclick="editClick(this);"> edit </i>
+                </a>
+                <a href='/transactions/${data.id}/delete'>
+                    <i class="tiny material-icons"  trId=${data.id}> delete </i>
+                </a>
+            </td>
+        </tr>
+        `
+        let innerHTML = table.innerHTML;
+        table.innerHTML = insertedTransaction + innerHTML;
+    });    
 }
 
 function modalaccoutClicked(button) {
@@ -142,24 +145,42 @@ function rowClick(currenttr, lock) {
 }
 
 function requireMore(nextPageToken) {
-    $.ajax(`?pageToken=${encodeURIComponent(nextPageToken)}&resType=html`)
-        .done((data)=> {
-            let table = $('#transactionTable')[0];
-            res = JSON.parse(data);
-            moreTable = res.html;
-            table.innerHTML += moreTable;
+    axios.get(`?pageToken=${encodeURIComponent(nextPageToken)}&resType=html`, {
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    }).then((response) => {        
+        let table = $('#transactionTable')[0];        
+        moreTable = response.data.html;
+        table.innerHTML += moreTable;
+        
+        var btn = $('#moreButton')[0];
+        if(response.data.nextPageToken) {                                
+            btn.setAttribute("onclick" ,"requireMore('"+ response.data.nextPageToken + "')");
+            btn.style.visibility = "visiable"
+        }
+        else{
+            //disable more button
+            btn.style.visibility = "hidden"
+        }    
+    });     
+
+    // $.ajax(`?pageToken=${encodeURIComponent(nextPageToken)}&resType=html`)
+    //     .done((data)=> {
+    //         let table = $('#transactionTable')[0];
+    //         res = JSON.parse(data);
+    //         moreTable = res.html;
+    //         table.innerHTML += moreTable;
             
-            var btn = $('#moreButton')[0];
-            if(res.nextPageToken) {                                
-                btn.setAttribute("onclick" ,"requireMore('"+ res.nextPageToken + "')");
-                btn.style.visibility = "visiable"
-            }
-            else{
-                //disable more button
-                btn.style.visibility = "hidden"
-            }
-        })
-        .fail((err) => {});       
+    //         var btn = $('#moreButton')[0];
+    //         if(res.nextPageToken) {                                
+    //             btn.setAttribute("onclick" ,"requireMore('"+ res.nextPageToken + "')");
+    //             btn.style.visibility = "visiable"
+    //         }
+    //         else{
+    //             //disable more button
+    //             btn.style.visibility = "hidden"
+    //         }
+    //     })
+    //     .fail((err) => {});       
 }
 
 document.addEventListener('DOMContentLoaded', function() {
