@@ -1,38 +1,77 @@
-//- Copyright 2017, Google, Inc.
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-
 extends ../base.pug
 
-block content
-  h3 Transactions
+block link
+  -var selectedMenu = 'entries';     
 
-  a(href="/transactions/add", class='btn btn-success btn-sm')
-    i.glyphicon.glyphicon-plus
-    span  Add Transaction
+append scripts  
+  script(src='entries.js')
+  script(src='https://unpkg.com/axios/dist/axios.min.js')
+  script(src='https://code.jquery.com/jquery-3.3.1.min.js')
 
-  table(class='table table-sm')
-    each transaction in transactions      
-      tr
-      .media
-        .media-body
-          td(scope="row")= transaction.title
-          td= transaction.author
+block content   
+  
+  include update.pug
+  
+  .row 
+    //-form.col.s12(id='trForm')
+    form.col.s12(id=`trForm` method="GET" action="/entries")    
+      .row      
+        .input-field.col.s2
+          label(for="LusingDate") 시작일 
+          input.form-control(type="text", name="LusingDate", id=`LusingDate`, value=`${LusingDate}`)
+        .input-field.col.s2
+          label(for="RusingDate") 종료일 
+          input.form-control(type="text", name="RusingDate", id=`RusingDate`, value=`${RusingDate}`)
+        .input-field.col.s3
+          //- label(for="account") 항목             
+          select.form-control(type="text", name="account", id=`account`)
+            if selectedAccount==undefined || selectedAccount==""
+              option(value="" disabled selected) 항목선택                        
+            each account in accounts
+              if account.description != '---'
+                if account.id == selectedAccount 
+                  option(value=`${account.id}` selected)= account.description
+                else
+                  option(value=`${account.id}`)= account.description
+        .input-field.col.s3
+          label(for="description") 내역 
+          input.form-control(type="text", name="description", id=`description`)
+        .input-field.col.s2
+          button.waves-effect.waves-light.btn-small.modal-close(type="submit") #[i.material-icons search]
+  .row    
+    table.striped(style="line-height: 1px; padding-top: 1px", id="transactionTable")
+      each transaction in transactions      
+        tr(onmousedown="rowClick(this,false);", trId=transaction.id, insertDate=transaction.insertDate)
+          td(scope="row")= transaction.usingDate
+          td= transaction.description
+          td.amount= transaction.amount
+          td(accountId=`${transaction.lAccount}`)= transaction.lAccountDescription
+          td(accountId=`${transaction.rAccount}`)= transaction.rAccountDescription
+          td
+            //i(data-target="modal1", class="tiny material-icons modal-trigger", transaction=transaction, onClick="editClick(this);") edit
+            //i(data-target="modal1", class="tiny material-icons modal-trigger", onClick=`editClick(${JSON.stringify(transaction)})`) edit
+            a(href=`#modal1` class='modal-trigger')
+              i(class="tiny material-icons", trId=transaction.id, onClick="editClick(this);") edit
+            a(href=`/transactions/${transaction.id}/delete`)
+              i(class="tiny material-icons", trId=transaction.id) delete
+  
+  .modal(id="modal1", style='width: 910px')
+    .modal-content(style='padding: 5px; width: 900px')     
+      h4(id="transactionIdOfModal") temp           
+      +updateblock('modal')     
+    .modal-footer
+      a(href="#!" class="modal-close waves-effect waves-green btn-flat") cancel  
 
   if !transactions.length
     p No transactions found.
 
   if nextPageToken
-    nav
-      ul.pager
-        li
-          a(href=`?pageToken=${encodeURIComponent(nextPageToken)}`) More
+    //-console.log("n.p.t: "+nextPageToken)
+    //- a.waves-effect.waves-light.btn-small(href=`?pageToken=${encodeURIComponent(nextPageToken)}`) More    
+    a.waves-effect.waves-light.btn-small(id="moreButton", onclick=`requireMore(${JSON.stringify(nextPageToken)})`) More
+    
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems, null);      
+    });

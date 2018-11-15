@@ -90,7 +90,7 @@ function toDatastore (obj, nonIndexed) {
 // [START list]
 function list (token, cb) {
   const q = ds.createQuery([kind])    
-    //.order('type')
+    .order('type')
     .order('seq')
     .start(token);
   ds.runQuery(q, (err, entities) => {

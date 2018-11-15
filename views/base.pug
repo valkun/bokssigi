@@ -28,13 +28,13 @@ html(lang="ko")
   block link
     -var selectedMenu = 'transactions';    
   
-  -var menus = {'transactions':'거래입력', 'balance':'자산부채', 'accounts':'환경설정', 'books':'books'}
+  -var menus = {'transactions':'거래입력', 'entries':'거래내역', 'balance':'자산부채', 'accounts':'환경설정'}
   
   body
     nav
       .nav-wrapper
-        a(href="#" class="brand-logo right") bokssigi
-          ul(id="nav-mobile" class="left hide-on-med-and-down")                        
+        a(href="/" class="brand-logo right") bokssigi
+          ul.left
             each name, link in menus              
               if selectedMenu === link                
                 li(class='active')

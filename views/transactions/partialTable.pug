@@ -3,9 +3,9 @@ each transaction in transactions
     tr(onmousedown="rowClick(this,false);", trId=transaction.id)
         td(scope="row")= transaction.usingDate
         td= transaction.description
-        td.amount= transaction.amount
-        td= transaction.lAccountDescription
-        td= transaction.rAccountDescription
+        td.amount= transaction.amount        
+        td(accountId=`${transaction.lAccount}`)= transaction.lAccountDescription
+        td(accountId=`${transaction.rAccount}`)= transaction.rAccountDescription
         td
             a(href=`#modal1` class='modal-trigger')
                 i(class="tiny material-icons", trId=transaction.id, onClick="editClick(this);") edit

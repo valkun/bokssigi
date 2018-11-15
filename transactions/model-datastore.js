@@ -14,7 +14,12 @@ function getAccountModel () {
   return require(`../accounts/model-${require('../config').get('DATA_BACKEND')}`);
 }
 
+function getBalanceModel () {
+  return require(`../balance/model-${require('../config').get('DATA_BACKEND')}`);
+}
+
 const accountModel = getAccountModel();
+const balanceModel = getBalanceModel();
 // Translates from Datastore's entity format to
 // the format expected by the application.
 //
@@ -123,6 +128,148 @@ function list (limit, token, cb) {
 }
 // [END list]
 
+//XXX
+function entries_OLD (limit, usingDate, account, token, cb) {  
+  const q = ds.createQuery([kind])
+    .filter('usingDate', '>=', usingDate[0])
+    .filter('usingDate', '<=', usingDate[1])
+    .limit(limit)
+    .order('usingDate', {
+      descending: true,
+    })
+    .start(token);
+
+  ds.runQuery(q, (err, entities, nextQuery) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+    const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
+    //cb(null, entities.map(fromDatastore), hasMore);
+    const results = entities.map(async (obj) => { 
+      obj.id = obj[Datastore.KEY].id;
+      
+      const lAccount = await accountModel.readPromise(obj.lAccount);
+      obj.lAccountDescription = lAccount.description;
+      const rAccount = await accountModel.readPromise(obj.rAccount);
+      obj.rAccountDescription = rAccount.description;
+      
+      return obj
+    });
+    Promise.all(results).then((completed) => {
+      let completeResult = [];
+      if (account != undefined && account != "") {
+        const completeResult = completed.filter((entry) => {
+          if (entry.lAccount == account || entry.rAccount == account){
+            return true;
+          }
+          else {
+            return false;
+          }
+        });
+        Promise.all(completeResult).then((filteredResult) => {
+          cb(null, filteredResult, hasMore);
+        });
+      }
+      else {
+        cb(null, completed, hasMore);
+      }      
+    }).catch(err => {
+      console.log(err);
+    });    
+  });
+  
+}
+
+//account가 자산/부체인지 확인
+const isBalanceKeepingAccount = async (accountId) => {
+  const account = await accountModel.readPromise(accountId);
+  if(account.type == "asset" || account.type == "debt") {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+function entries (limit, usingDate, account, token, cb) {  
+  const q = ds.createQuery([kind])
+    .filter('usingDate', '>=', usingDate[0])
+    .filter('usingDate', '<=', usingDate[1])
+    .limit(limit)
+    .order('usingDate', {
+      descending: true,
+    })
+    .start(token);
+
+  ds.runQuery(q, (err, entities, nextQuery) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+    const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
+    //cb(null, entities.map(fromDatastore), hasMore);
+    if (account != undefined && account != "") {      
+      // filter for specified account 
+      const filteredEntities = entities.filter((entry) => {
+        if (entry.lAccount == account || entry.rAccount == account){
+          return true;
+        }
+        else {
+          return false;
+        }
+      });
+      Promise.all(filteredEntities).then((filteredResult) => {      
+        const convertingPromise = filteredResult.map(async (obj) => { 
+          obj.id = obj[Datastore.KEY].id;
+          
+          const lAccount = await accountModel.readPromise(obj.lAccount);
+          obj.lAccountDescription = lAccount.description;
+          const rAccount = await accountModel.readPromise(obj.rAccount);
+          obj.rAccountDescription = rAccount.description;
+          
+          return obj
+        });
+        Promise.all(convertingPromise).then((completed) => {                
+          //account가 자산/부체인지 확인
+          if(isBalanceKeepingAccount(account)) {
+            let balanceCursor = completed[0].usingDate;
+            for (let i = 0;i < completed.length;i++){
+              let currentUsingDate = completed[i].usingDate;
+              if(balanceCursor > currentUsingDate){
+                balanceCursor = currentUsingDate;
+                break;
+              }
+            }
+            //get amount of balanceCursor
+            const balanceAmount = await balanceModel.readPromise(account, balanceCursor);
+          }   
+          cb(null, completed, hasMore);
+        }).catch(err => {
+          console.log(err);
+        });  
+      });        // filter    
+    }
+    else {
+      const convertingPromise = entities.map(async (obj) => { 
+        obj.id = obj[Datastore.KEY].id;
+        
+        const lAccount = await accountModel.readPromise(obj.lAccount);
+        obj.lAccountDescription = lAccount.description;
+        const rAccount = await accountModel.readPromise(obj.rAccount);
+        obj.rAccountDescription = rAccount.description;
+        
+        return obj
+      });
+      Promise.all(convertingPromise).then((completed) => {        
+        cb(null, completed, hasMore);
+      }).catch(err => {
+        console.log(err);
+      });  
+    }
+  }); // run query
+}
+
 // Creates a new book or updates an existing book with new data. The provided
 // data is automatically translated into Datastore format. The book will be
 // queued for background processing.
@@ -221,6 +368,7 @@ module.exports = {
   read,
   update,
   delete: _delete,
-  list
+  list,
+  entries
 };
 // [END exports]

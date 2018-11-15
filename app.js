@@ -13,7 +13,7 @@
 
 'use strict';
 
-require('@google-cloud/debug-agent').start();
+//require('@google-cloud/debug-agent').start();
 
 const path = require('path');
 const express = require('express');
@@ -41,6 +41,7 @@ app.use('/api/books', require('./books/api'));
 // transactions
 app.use('/transactions', require('./transactions/crud'));
 app.use('/api/transactions', require('./transactions/api'));
+app.use('/entries', require('./transactions/entries'));
 
 // accounts
 app.use('/accounts', require('./accounts/crud'));

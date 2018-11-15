@@ -1,0 +1,7 @@
+indexes:
+- kind: Account
+  properties:
+  - name: type
+    direction: asc
+  - name: seq
+    direction: asc

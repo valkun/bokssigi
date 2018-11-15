@@ -20,7 +20,7 @@ const config = require('../config');
 const ds = Datastore({
   projectId: config.get('GCLOUD_PROJECT')
 });
-const kind = 'Book';
+const kind = 'Balance';
 // [END config]
 
 // Translates from Datastore's entity format to
@@ -153,6 +153,24 @@ function read (id, cb) {
   });
 }
 
+function readPromise (account, usingDate) {
+  return new Promise((resolve, reject) => {
+    const key = ds.key([kind, parseInt(id, 10)]);
+    ds.get(key, (err, entity) => {
+      if (!err && !entity) {
+        err = {
+          code: 404,
+          message: 'Not found'
+        };
+      }
+      if (err) {
+        reject(err);        
+      }
+      resolve(fromDatastore(entity));
+    });
+  });  
+}
+
 function _delete (id, cb) {
   const key = ds.key([kind, parseInt(id, 10)]);
   ds.delete(key, cb);
@@ -162,6 +180,7 @@ function _delete (id, cb) {
 module.exports = {
   create,
   read,
+  readPromise,
   update,
   delete: _delete,
   list

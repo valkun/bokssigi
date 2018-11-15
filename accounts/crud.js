@@ -37,17 +37,25 @@ router.use((req, res, next) => {
  * Display a page of accounts.
  */
 router.get('/', (req, res, next) => {  
-  getModel().list(req.query.pageToken, (err, entities, cursor) => {
-    if (err) {
-      next(err);
-      return;
-    }    
-    res.render('accounts/list.pug', {
-      accounts: entities,                  
-      nextPageToken: cursor
+  var sess = req.session;
+  if(sess.username) {
+    getModel().list(req.query.pageToken, (err, entities, cursor) => {
+      if (err) {
+        next(err);
+        return;
+      }    
+      res.render('accounts/list.pug', {
+        accounts: entities,                  
+        nextPageToken: cursor
+      });
     });
-  });
+  }
+  else {    
+    res.render('login/login.pug');    
+  }
 });
+
+  
 
 /**
  * GET /accounts/add
