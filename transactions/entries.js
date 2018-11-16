@@ -76,7 +76,9 @@ router.get('/', (req, res, next) => {
         
         entities.forEach((entity)=>{
           entity.amount = numberWithCommas(entity.amount);
-          entity.balance = numberWithCommas(entity.balance);
+          if (entity.balance){
+            entity.balance = numberWithCommas(entity.balance);
+          }
         });
 
         if (req.query.resType == "html") {
