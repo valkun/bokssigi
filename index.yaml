@@ -5,3 +5,10 @@ indexes:
     direction: asc
   - name: seq
     direction: asc
+- kind: Balance
+  properties:
+  - name: account
+    direction: asc
+  - name: usingDate
+    direction: asc
+

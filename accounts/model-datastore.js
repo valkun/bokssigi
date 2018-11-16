@@ -163,8 +163,9 @@ async function readPromise (id) {
       }
       if (err) {
         reject(err);        
-      }
-      resolve(fromDatastore(entity));
+      }else{
+        resolve(fromDatastore(entity));
+      }      
     });
   });  
 }

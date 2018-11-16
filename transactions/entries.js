@@ -68,7 +68,7 @@ router.get('/', (req, res, next) => {
         req.query.account = "";
       }
       
-      getModel().entries(30, [LusingDate, RusingDate], req.query.account, req.query.pageToken, (err, entities, cursor) => {
+      getModel().entries([LusingDate, RusingDate], req.query.account, req.query.pageToken, (err, entities, balance) => {
         if (err) {
           next(err);
           return;
@@ -76,6 +76,7 @@ router.get('/', (req, res, next) => {
         
         entities.forEach((entity)=>{
           entity.amount = numberWithCommas(entity.amount);
+          entity.balance = numberWithCommas(entity.balance);
         });
 
         if (req.query.resType == "html") {
@@ -84,13 +85,13 @@ router.get('/', (req, res, next) => {
           var html = fn({
             transactions: entities,            
             accounts: accounts,
-            nextPageToken: cursor,
+            balance: balance,
             LusingDate: LusingDate,
             RusingDate: RusingDate,
             selectedAccount: req.query.account,
             moment: moment            
           });          
-          res.status(200).send({html: html, nextPageToken: cursor });
+          res.status(200).send({html: html});
         }   
         else {
           res.render('transactions/list.pug', {
@@ -99,7 +100,7 @@ router.get('/', (req, res, next) => {
             LusingDate: LusingDate,
             RusingDate: RusingDate,
             selectedAccount: req.query.account,
-            nextPageToken: cursor
+            balance: balance
           });
         }         
       });

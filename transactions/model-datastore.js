@@ -192,11 +192,10 @@ const isBalanceKeepingAccount = async (accountId) => {
   }
 }
 
-function entries (limit, usingDate, account, token, cb) {  
+function entries (usingDate, account, token, cb) {  
   const q = ds.createQuery([kind])
     .filter('usingDate', '>=', usingDate[0])
-    .filter('usingDate', '<=', usingDate[1])
-    .limit(limit)
+    .filter('usingDate', '<=', usingDate[1])    
     .order('usingDate', {
       descending: true,
     })
@@ -231,20 +230,32 @@ function entries (limit, usingDate, account, token, cb) {
           return obj
         });
         Promise.all(convertingPromise).then((completed) => {                
-          //account가 자산/부체인지 확인
+          //account가 자산/부채 인지 확인
           if(isBalanceKeepingAccount(account)) {
-            let balanceCursor = completed[0].usingDate;
-            for (let i = 0;i < completed.length;i++){
-              let currentUsingDate = completed[i].usingDate;
-              if(balanceCursor > currentUsingDate){
-                balanceCursor = currentUsingDate;
-                break;
-              }
-            }
+            let balanceCursor = completed[completed.length-1].usingDate;            
             //get amount of balanceCursor
-            const balanceAmount = await balanceModel.readPromise(account, balanceCursor);
-          }   
-          cb(null, completed, hasMore);
+            //const balanceAmount = await balanceModel.readPromise(account, balanceCursor);
+            balanceModel.readPromise(account, balanceCursor).then((balance) => {                                          
+              for (let i = completed.length - 1; i >= 0;i--){
+                let transaction = completed[i];
+                if(transaction.lAccount == account){
+                  balance += Number(transaction.amount);
+                  transaction.balance = balance;
+                }
+                else{
+                  balance -= Number(transaction.amount);
+                  transaction.balance = balance;
+                }
+              }
+              cb(null, completed, balance);
+            }).catch((err) => {              
+              cb(err, completed, 0);
+            });
+          }
+          // account is ETC
+          else {
+            cb(null, completed, 0);
+          }             
         }).catch(err => {
           console.log(err);
         });  
@@ -262,7 +273,7 @@ function entries (limit, usingDate, account, token, cb) {
         return obj
       });
       Promise.all(convertingPromise).then((completed) => {        
-        cb(null, completed, hasMore);
+        cb(null, completed, 0);
       }).catch(err => {
         console.log(err);
       });  

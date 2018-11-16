@@ -44,7 +44,8 @@ block content
         tr(onmousedown="rowClick(this,false);", trId=transaction.id, insertDate=transaction.insertDate)
           td(scope="row")= transaction.usingDate
           td= transaction.description
-          td.amount= transaction.amount
+          td.amount= transaction.amount    
+          td.balance= transaction.balance
           td(accountId=`${transaction.lAccount}`)= transaction.lAccountDescription
           td(accountId=`${transaction.rAccount}`)= transaction.rAccountDescription
           td

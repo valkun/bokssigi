@@ -119,7 +119,7 @@ function update (id, data, cb) {
 
   const entity = {
     key: key,
-    data: toDatastore(data, ['description'])
+    data: toDatastore(data, ['balance'])
   };
 
   ds.save(
@@ -153,20 +153,30 @@ function read (id, cb) {
   });
 }
 
-function readPromise (account, usingDate) {
+async function readPromise (account, usingDate) {
   return new Promise((resolve, reject) => {
-    const key = ds.key([kind, parseInt(id, 10)]);
-    ds.get(key, (err, entity) => {
-      if (!err && !entity) {
+    const q = ds.createQuery([kind])    
+    .filter('account', '=', account)
+    .filter('usingDate', '=', usingDate);        
+
+    ds.runQuery(q, (err, entity, nextQuery) => {
+      if (!err && !entity ) {        
+        err = {
+          code: 404,
+          message: 'Not found'
+        };
+      }
+      else if (entity.length == 0){
         err = {
           code: 404,
           message: 'Not found'
         };
       }
       if (err) {
-        reject(err);        
-      }
-      resolve(fromDatastore(entity));
+        reject(err);
+      }else{
+        resolve(Number(fromDatastore(entity[0]).balance));
+      }      
     });
   });  
 }
