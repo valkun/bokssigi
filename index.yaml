@@ -10,5 +10,11 @@ indexes:
   - name: account
     direction: asc
   - name: usingDate
-    direction: asc
+    direction: desc
+- kind: Transaction
+  properties:
+  - name: usingDate
+    direction: desc
+  - name: insertDate
+    direction: desc
 

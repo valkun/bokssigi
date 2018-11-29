@@ -55,10 +55,12 @@ function editTransaction(data){
     tds[0].innerText=data.usingDate;
     tds[1].innerText=data.description;
     tds[2].innerText=numberWithCommas(data.amount);
-    tds[3].innerText=data.lAccountDescription;
-    tds[3].setAttribute('accountId', data.lAccount)
-    tds[4].innerText=data.rAccountDescription;
-    tds[4].setAttribute('accountId', data.rAccount)
+    let right = tds.length - 2;
+    tds[right].innerText=data.rAccountDescription;
+    tds[right].setAttribute('accountId', data.rAccount);
+    right--;
+    tds[right].innerText=data.lAccountDescription;
+    tds[right].setAttribute('accountId', data.lAccount);    
 }
 
 function insertTransaction(data) {
@@ -134,10 +136,13 @@ function editClick(currentItem) {
     $('#modalusingDate')[0].value = tds[0].innerText;
     $('#modaldescription')[0].value = tds[1].innerText;
     $('#modalamount')[0].value = tds[2].innerText;
-    $('#modallAccount')[0].value = tds[3].innerText;
-    $('#modallAccount')[0].setAttribute('accountId', tds[3].getAttribute('accountId'));
-    $('#modalrAccount')[0].value = tds[4].innerText;
-    $('#modalrAccount')[0].setAttribute('accountId', tds[4].getAttribute('accountId'));
+    let right = tds.length - 2;
+    $('#modalrAccount')[0].value = tds[right].innerText;
+    $('#modalrAccount')[0].setAttribute('accountId', tds[right].getAttribute('accountId'));
+    right--;
+    $('#modallAccount')[0].value = tds[right].innerText;
+    $('#modallAccount')[0].setAttribute('accountId', tds[right].getAttribute('accountId'));
+    
 }
 
 function rowClick(currenttr, lock) {  

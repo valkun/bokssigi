@@ -129,57 +129,57 @@ function list (limit, token, cb) {
 // [END list]
 
 //XXX
-function entries_OLD (limit, usingDate, account, token, cb) {  
-  const q = ds.createQuery([kind])
-    .filter('usingDate', '>=', usingDate[0])
-    .filter('usingDate', '<=', usingDate[1])
-    .limit(limit)
-    .order('usingDate', {
-      descending: true,
-    })
-    .start(token);
+// function entries_OLD (limit, usingDate, account, token, cb) {  
+//   const q = ds.createQuery([kind])
+//     .filter('usingDate', '>=', usingDate[0])
+//     .filter('usingDate', '<=', usingDate[1])
+//     .limit(limit)
+//     .order('usingDate', {
+//       descending: true,
+//     })
+//     .start(token);
 
-  ds.runQuery(q, (err, entities, nextQuery) => {
-    if (err) {
-      cb(err);
-      return;
-    }
-    const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
-    //cb(null, entities.map(fromDatastore), hasMore);
-    const results = entities.map(async (obj) => { 
-      obj.id = obj[Datastore.KEY].id;
+//   ds.runQuery(q, (err, entities, nextQuery) => {
+//     if (err) {
+//       cb(err);
+//       return;
+//     }
+//     const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
+//     //cb(null, entities.map(fromDatastore), hasMore);
+//     const results = entities.map(async (obj) => { 
+//       obj.id = obj[Datastore.KEY].id;
       
-      const lAccount = await accountModel.readPromise(obj.lAccount);
-      obj.lAccountDescription = lAccount.description;
-      const rAccount = await accountModel.readPromise(obj.rAccount);
-      obj.rAccountDescription = rAccount.description;
+//       const lAccount = await accountModel.readPromise(obj.lAccount);
+//       obj.lAccountDescription = lAccount.description;
+//       const rAccount = await accountModel.readPromise(obj.rAccount);
+//       obj.rAccountDescription = rAccount.description;
       
-      return obj
-    });
-    Promise.all(results).then((completed) => {
-      let completeResult = [];
-      if (account != undefined && account != "") {
-        const completeResult = completed.filter((entry) => {
-          if (entry.lAccount == account || entry.rAccount == account){
-            return true;
-          }
-          else {
-            return false;
-          }
-        });
-        Promise.all(completeResult).then((filteredResult) => {
-          cb(null, filteredResult, hasMore);
-        });
-      }
-      else {
-        cb(null, completed, hasMore);
-      }      
-    }).catch(err => {
-      console.log(err);
-    });    
-  });
+//       return obj
+//     });
+//     Promise.all(results).then((completed) => {
+//       let completeResult = [];
+//       if (account != undefined && account != "") {
+//         const completeResult = completed.filter((entry) => {
+//           if (entry.lAccount == account || entry.rAccount == account){
+//             return true;
+//           }
+//           else {
+//             return false;
+//           }
+//         });
+//         Promise.all(completeResult).then((filteredResult) => {
+//           cb(null, filteredResult, hasMore);
+//         });
+//       }
+//       else {
+//         cb(null, completed, hasMore);
+//       }      
+//     }).catch(err => {
+//       console.log(err);
+//     });    
+//   });
   
-}
+// }
 
 //account가 자산/부체인지 확인
 const isBalanceKeepingAccount = async (accountId) => {
@@ -197,6 +197,9 @@ function entries (usingDate, account, token, cb) {
     .filter('usingDate', '>=', usingDate[0])
     .filter('usingDate', '<=', usingDate[1])    
     .order('usingDate', {
+      descending: true,
+    })
+    .order('insertDate', {
       descending: true,
     })
     .start(token);
@@ -231,31 +234,34 @@ function entries (usingDate, account, token, cb) {
         });
         Promise.all(convertingPromise).then((completed) => {                
           //account가 자산/부채 인지 확인
-          if(isBalanceKeepingAccount(account)) {
-            let balanceCursor = completed[completed.length-1].usingDate;            
-            //get amount of balanceCursor
-            //const balanceAmount = await balanceModel.readPromise(account, balanceCursor);
-            balanceModel.readPromise(account, balanceCursor).then((balance) => {                                          
-              for (let i = completed.length - 1; i >= 0;i--){
-                let transaction = completed[i];
-                if(transaction.lAccount == account){
-                  balance += Number(transaction.amount);
-                  transaction.balance = balance;
+          isBalanceKeepingAccount(account).then((flag) => {
+            if(flag){              
+              let balanceCursor = completed[completed.length-1].usingDate;            
+              //get amount of balanceCursor
+              //const balanceAmount = await balanceModel.readPromise(account, balanceCursor);
+              balanceModel.readPromise(account, balanceCursor).then((balance) => {   
+                let _balance = balance;                           
+                for (let i = completed.length - 1; i >= 0;i--){
+                  let transaction = completed[i];
+                  if(transaction.lAccount == account){
+                    _balance += Number(transaction.amount);
+                    transaction.balance = _balance;
+                  }
+                  else{
+                    _balance -= Number(transaction.amount);
+                    transaction.balance = _balance;cb
+                  }
                 }
-                else{
-                  balance -= Number(transaction.amount);
-                  transaction.balance = balance;
-                }
-              }
-              cb(null, completed, balance);
-            }).catch((err) => {              
-              cb(err, completed, 0);
-            });
-          }
-          // account is ETC
-          else {
-            cb(null, completed, 0);
-          }             
+                cb(null, completed, balance);
+              }).catch((err) => {              
+                cb(err, completed, 0);
+              });
+            }
+            // account is not balance keeping
+            else {
+              cb(null, completed, 0);
+            } 
+          });                      
         }).catch(err => {
           console.log(err);
         });  
@@ -281,6 +287,7 @@ function entries (usingDate, account, token, cb) {
   }); // run query
 }
 
+
 // Creates a new book or updates an existing book with new data. The provided
 // data is automatically translated into Datastore format. The book will be
 // queued for background processing.
@@ -298,19 +305,28 @@ function update (id, data, cb) {
     data: toDatastore(data, ['amount'])
   };
 
-  ds.save(
-    entity,
-    (err) => {
-      data.id = entity.key.id;
-      accountModel.read(data.lAccount, (err, lAccount) => {
-        accountModel.read(data.rAccount, (err, rAccount) => {
-          data.lAccountDescription = lAccount.description;
-          data.rAccountDescription = rAccount.description;
+  ds.save(entity, (err) => {
+    data.id = entity.key.id;
+    accountModel.read(data.lAccount, (err, lAccount) => {
+      accountModel.read(data.rAccount, (err, rAccount) => {
+        data.lAccountDescription = lAccount.description;
+        data.rAccountDescription = rAccount.description;
+
+        let checkBalanceKeeping = [isBalanceKeepingAccount(lAccount.id), isBalanceKeepingAccount(rAccount.id)];        
+        Promise.all(checkBalanceKeeping).then((checkResult) => {
+          if(checkResult[0]){
+            balanceModel.reCalculateBalance(lAccount.id, data.usingDate, this);
+          } 
+          if(checkResult[1]){
+            balanceModel.reCalculateBalance(rAccount.id, data.usingDate, this);
+          }    
           cb(err, err ? null : data);
-        });
-      });      
-    }
-  );
+        }).catch(err => {
+          console.log(err);
+        });       
+      });
+    });      
+  });
 }
 // [END update]
 

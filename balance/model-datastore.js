@@ -15,6 +15,7 @@
 
 const Datastore = require('@google-cloud/datastore');
 const config = require('../config');
+const moment = require('moment');
 
 // [START config]
 const ds = Datastore({
@@ -22,6 +23,7 @@ const ds = Datastore({
 });
 const kind = 'Balance';
 // [END config]
+
 
 // Translates from Datastore's entity format to
 // the format expected by the application.
@@ -105,6 +107,78 @@ function list (limit, token, cb) {
 }
 // [END list]
 
+async function reCalculateBalance(accountid, usingDate, transactionModel) {
+  let cursor = await deleteVictimizedBalance(accountid, usingDate);
+  if (cursor != usingDate){
+  }
+  //update balance
+  transactionModel.entries([usingDate, moment(Date.now()).format('YYYYMMDD')], accountid, undefined, (err, entities, balance) => {
+    let prevUsingDate = usingDate;
+    for (let i = entities.length - 1; i >= 0; i--) {      
+      let transaction = entities[i];
+      if(prevUsingDate != transaction.usingDate){
+        prevUsingDate = transaction.usingDate;
+        create({"account":accountid, "balance": balance, "usingDate": prevUsingDate}, ()=>{});        
+      }
+      if(transaction.lAccount == accountid){
+        balance += Number(transaction.amount);
+        transaction.balance = balance;
+      }
+      else{
+        balance -= Number(transaction.amount);
+        transaction.balance = balance;
+      }
+      
+    }
+  });
+ 
+}
+
+async function deleteVictimizedBalance(accountid, usingDate) {
+  try{
+    let victimizedBalance = await listVictimizedBalance(accountid, usingDate);
+    await victimizedBalance.forEach((item) => {
+      _delete(fromDatastore(item).id, (err) => {
+        if (!err){
+          console.log(err);
+        }
+      });
+    });
+    return true;
+  }
+  catch(err) {
+    console.log('no victims');
+    return false;
+  }  
+}
+
+async function listVictimizedBalance(accountid, usingDate) {
+  return new Promise((resolve, reject) => {
+    const q = ds.createQuery([kind])    
+    .filter('account', '=', accountid)
+    .filter('usingDate', '>', usingDate);        
+
+    ds.runQuery(q, (err, entity, nextQuery) => {
+      if (!err && !entity ) {        
+        err = {
+          code: 404,
+          message: 'Not found'
+        };
+      }
+      else if (entity.length == 0){
+        err = {
+          code: 404,
+          message: 'Not found'
+        };
+      }
+      if (err) {
+        reject(err);
+      }else{
+        resolve(entity);
+      }      
+    });
+  });  
+}
 // Creates a new book or updates an existing book with new data. The provided
 // data is automatically translated into Datastore format. The book will be
 // queued for background processing.
@@ -191,6 +265,7 @@ module.exports = {
   create,
   read,
   readPromise,
+  reCalculateBalance,
   update,
   delete: _delete,
   list
